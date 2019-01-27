@@ -22,9 +22,10 @@ def model(train_X,train_y,test_X,test_y,learning_rate,epoch,batch_size):
     krnls=initialize_kernels(channels)
     logits=network(X,krnls)
     loss=tf.losses.softmax_cross_entropy(onehot_labels=Y,logits=logits)
-    optimizer=tf.train.AdamOptimizer(0.0001).minimize(loss)
+    optimizer=tf.train.AdamOptimizer(learning_rate).minimize(loss)
     
     init=tf.global_variables_initializer()
+    saver=tf.train.Saver()
     with tf.Session() as sess:
         sess.run(init)
        
@@ -37,8 +38,9 @@ def model(train_X,train_y,test_X,test_y,learning_rate,epoch,batch_size):
                 (mini_X,mini_y)=mini
                 _,minibatch_cost=sess.run([optimizer,loss],feed_dict={X:mini_X,Y:mini_y})
                 epoch_cost=epoch_cost+minibatch_cost/num_mini
-            if epoch%100==0:
-                print("Cost after epoch %i: %f" %(epoch,epoch_cost))
+#            if epoch%100==0:
+            print("Cost after epoch %i: %f" %(epoch,epoch_cost))
+            saver.save(sess,"E:/spider/Fashion_mnist/mnist.ckpt")  
             if epoch%5==0:
                 costs.append(epoch_cost)
         plt.plot(np.squeeze(costs))
@@ -49,8 +51,9 @@ def model(train_X,train_y,test_X,test_y,learning_rate,epoch,batch_size):
         correct_prediction = tf.equal(tf.argmax(logits,axis=1), tf.argmax(Y,axis=1))
         accuracy = tf.reduce_mean(tf.cast(correct_prediction, "float"))
         print ("Train Accuracy:", accuracy.eval({X: train_X, Y: train_y}))
-        print ("Test Accuracy:", accuracy.eval({X: test_X, Y: test_y}))               
-    return logits
+        print ("Test Accuracy:", accuracy.eval({X: test_X, Y: test_y}))   
+#        saver.save(sess,"E:/spider/Fashion_mnist/mnist.ckpt")            
+    return None
     
 
 
@@ -68,11 +71,11 @@ def network(X,krnls):
     pool3=tf.layers.max_pooling2d(inputs=conv3,pool_size=[2,2],strides=[2,2])
     
     flat=tf.reshape(pool3,[-1,pool3.shape[1]*pool3.shape[2]*pool3.shape[3]])
-    dense1=tf.layers.dense(inputs=flat,units=512,activation='relu')
-    dropout1=tf.layers.dropout(inputs=dense1,rate=0.5)
-    dense2=tf.layers.dense(inputs=dropout1,units=256,activation='relu')
-    dropout2=tf.layers.dropout(inputs=dense2,rate=0.5)
-    logits=tf.layers.dense(inputs=dropout2,units=10)
+    dense1=tf.layers.dense(inputs=flat,units=512,activation='relu',name="dense1")
+    dropout1=tf.layers.dropout(inputs=dense1,rate=0.5,name="dropout1")
+    dense2=tf.layers.dense(inputs=dropout1,units=256,activation='relu',name="dense2")
+    dropout2=tf.layers.dropout(inputs=dense2,rate=0.5,name="dropout2")
+    logits=tf.layers.dense(inputs=dropout2,units=10,name="dense3")
     
     return logits
 
@@ -95,3 +98,23 @@ def initialize_kernels(channels):
         
     return parameter
 
+
+
+def predict(X1,Y1):
+    tf.reset_default_graph()
+    (nx1,nx2,c)=X1.shape
+    n_y=Y1.shape[0]
+    X,Y=create_placeholders(nx1,nx2,n_y)
+    costs=[]
+    channels=np.array([1,16,32,64])
+    krnls=initialize_kernels(channels)
+    logits=network(X,krnls)
+    saver=tf.train.Saver()
+    sess=tf.Session()
+    saver.restore(sess,"E:/spider/Fashion_mnist/mnist.ckpt")
+    p=tf.argmax(logits,axis=1)
+    prediction=sess.run(p,feed_dict={X:X1.reshape(-1,28,28,1),Y:Y1.reshape(-1,10)})
+    plt.imshow(X1.reshape(28,28))
+    print("Predicted class:",prediction," Original class:",np.argmax(Y1,axis=1))
+    return None
+model(train_X,train_y,test_X,test_y,0.001,40,600)
