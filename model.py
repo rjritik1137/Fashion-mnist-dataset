@@ -60,20 +60,20 @@ def model(train_X,train_y,test_X,test_y,learning_rate,epoch,batch_size):
 
 def network(X,krnls):
     inputs=tf.cast(tf.reshape(X,[-1,28,28,1]),tf.float32)    
-    conv1=tf.nn.relu(tf.nn.conv2d(inputs,krnls["1"],padding="SAME",strides=[1,1,1,1],name='conv1'))
+    conv1=tf.nn.conv2d(inputs,krnls["1"],padding="SAME",strides=[1,1,1,1],name='conv1')
     pool1=tf.layers.max_pooling2d(inputs=conv1,pool_size=[2,2],strides=[2,2],name='pool1')
     b_norm1=tf.nn.relu(tf.layers.batch_normalization(inputs=pool1,momentum=0.99,center=True,scale=True,epsilon=0.000001,name="b_norm1"))
 #    conv1=tf.layers.conv2d(inputs,filters=32,kernel_size=[3,3],strides=1,padding='same',activation='relu')
     
 #    conv2=tf.layers.conv2d(inputs=pool1,filters=64,kernel_size=[3,3],strides=1,padding='same',activation='relu')
-    conv2=tf.nn.relu(tf.nn.conv2d(b_norm1,krnls["2"],padding="SAME",strides=[1,1,1,1],name='conv2'))
+    conv2=tf.nn.conv2d(b_norm1,krnls["2"],padding="SAME",strides=[1,1,1,1],name='conv2')
     pool2=tf.layers.max_pooling2d(inputs=conv2,pool_size=[2,2],strides=[2,2],name='pool2')
     b_norm2=tf.nn.relu(tf.layers.batch_normalization(inputs=pool2,momentum=0.99,center=True,scale=True,epsilon=0.000001,name="b_norm2"))
     
 #    conv3=tf.layers.conv2d(inputs=pool2,filters=128,kernel_size=[3,3],strides=1,padding='same',activation='relu')
-    conv3=tf.nn.relu(tf.nn.conv2d(b_norm2,krnls["3"],padding="SAME",strides=[1,1,1,1],name='conv3'))
+    conv3=tf.nn.conv2d(b_norm2,krnls["3"],padding="SAME",strides=[1,1,1,1],name='conv3')
     pool3=tf.layers.max_pooling2d(inputs=conv3,pool_size=[2,2],strides=[2,2],name='pool3')
-    b_norm3=tf.nn.relu(tf.layers.batch_normalization(inputs=pool3,momentum=0.99,center=True,scale=True,epsilon=0.000001,name="b_norm3"))
+    b_norm3=tf.layers.batch_normalization(inputs=pool3,momentum=0.99,center=True,scale=True,epsilon=0.000001,name="b_norm3")
     
     
     flat=tf.reshape(pool3,[-1,pool3.shape[1]*pool3.shape[2]*pool3.shape[3]])
