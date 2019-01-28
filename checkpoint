@@ -1,2 +1,0 @@
-model_checkpoint_path: "E:/spider/Fashion_mnist/mnist.ckpt"
-all_model_checkpoint_paths: "E:/spider/Fashion_mnist/mnist.ckpt"
